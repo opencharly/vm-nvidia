@@ -1,0 +1,53 @@
+#  opencharly/vm-nvidia — the NVIDIA GPU PASSTHROUGH **VM** base box.
+#
+#  A VM OWNS ITS KERNEL. With PCI passthrough the guest runs its own NVIDIA module and
+#  therefore must carry its own driver user-space — the libraries, the Vulkan ICD files and
+#  the container toolkit that configures them. Nothing is injected from the host; the host's
+#  driver serves the host, not the guest.
+#
+#  That is the exact inverse of a CDI pod, which must NOT bake a driver user-space because
+#  the host injects one per container. The two contracts:
+#
+#    layer-nvidia  -> the VM contract: driver user-space baked, nvidia-ctk present,
+#                     LD_LIBRARY_PATH exported so the baked libraries resolve.
+#                     Its checks assert /usr/bin/nvidia-ctk EXISTS — correct HERE, and
+#                     wrong in any container image.
+#    layer-cdi     -> the POD contract: host-injected driver, no baked user-space, no
+#                     nvidia binary. Correct for opencharly/pod-cdi, wrong here.
+#
+#  Never compose layer-cdi in this box: a VM that does not bake its driver has no driver.
+#
+#  The CachyOS guest image is the same distro family as the pod base, so the driver story
+#  differs only in WHO provides the user-space, not in which packages exist.
+#
+#  Pairs with opencharly/pod-cdi. If a change needs the GPU inside a container on a host,
+#  it belongs there, not here.
+
+import:
+    # The CachyOS base image family. One-directional: distro-cachyos imports nothing back.
+    - cachyos: '@github.com/opencharly/distro-cachyos:v2026.322.1210'
+
+vm-nvidia:
+    candy:
+        description: |
+            NVIDIA GPU passthrough VM base — the guest contract for a machine that owns its
+            own kernel module, and the VM sibling of opencharly/pod-cdi.
+
+            With PCI passthrough the guest loads its own NVIDIA module, so the driver
+            user-space must be baked into the image rather than injected from the host. This
+            box therefore composes layer-nvidia, which installs nvidia-container-toolkit and
+            the per-distro driver libraries, exports LD_LIBRARY_PATH so they resolve, and
+            carries the checks that assert /usr/bin/nvidia-ctk is present — all of which are
+            correct for a VM and wrong for a container.
+
+            A GPU container takes the opposite contract: the host injects the driver per
+            container through the CDI spec, so its image must bake NO driver user-space. That
+            is opencharly/pod-cdi. Composing layer-cdi here would leave the guest with no
+            driver at all.
+        base: cachyos.cachyos
+        platform:
+            - linux/amd64
+        candy:
+            - '@github.com/opencharly/layer-agent-forwarding:v2026.274.0608'
+            - '@github.com/opencharly/layer-nvidia:v2026.322.1139'
+            - '@github.com/opencharly/layer-cuda:v2026.321.1520'
