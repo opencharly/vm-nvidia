@@ -25,7 +25,7 @@
 
 import:
     # The CachyOS base image family. One-directional: distro-cachyos imports nothing back.
-    - cachyos: '@github.com/opencharly/distro-cachyos:v2026.322.1210'
+    - cachyos: '@github.com/opencharly/distro-cachyos:v2026.322.1045'
 
 vm-nvidia:
     candy:
