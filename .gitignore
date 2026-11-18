@@ -1,0 +1,3 @@
+# charly build artifacts — never committed
+.build/
+.check/
