@@ -25,7 +25,7 @@
 
 import:
     # The CachyOS base image family. One-directional: distro-cachyos imports nothing back.
-    - cachyos: '@github.com/opencharly/distro-cachyos:v2026.322.1045'
+    - cachyos: '@github.com/opencharly/distro-cachyos:v2026.325.1835'
 
 vm-nvidia:
     candy:
@@ -49,5 +49,11 @@ vm-nvidia:
             - linux/amd64
         candy:
             - '@github.com/opencharly/layer-agent-forwarding:v2026.274.0608'
-            - '@github.com/opencharly/layer-nvidia:v2026.322.1139'
-            - '@github.com/opencharly/layer-cuda:v2026.321.1520'
+            # ORDER IS THE CONTRACT (opencharly/layer-cuda#34): layer-cuda FIRST — its
+            # `cuda-drop-driver-userspace` removes the distro driver user-space the toolkit's
+            # own install pulls in — then layer-nvidia, which installs the GUEST driver that
+            # must survive. The reverse order (nvidia first, cuda after) stripped the guest's
+            # driver back off, and the pins below were the prefix-glob releases that deleted
+            # `libcudart` while they were at it.
+            - '@github.com/opencharly/layer-cuda:v2026.326.0028'
+            - '@github.com/opencharly/layer-nvidia:v2026.326.0913'
