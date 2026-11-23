@@ -30,8 +30,9 @@ vm-nvidia:
     base: cachyos.cachyos
     candy:
       - '@github.com/opencharly/layer-agent-forwarding:v2026.274.0608'
-      - '@github.com/opencharly/layer-nvidia:v2026.322.1139'
-      - '@github.com/opencharly/layer-cuda:v2026.321.1520'
+      # ORDER IS THE CONTRACT: layer-cuda's strip runs FIRST, then the guest driver installs.
+      - '@github.com/opencharly/layer-cuda:v2026.326.0028'
+      - '@github.com/opencharly/layer-nvidia:v2026.326.0913'
 ```
 
 `layer-nvidia`'s build checks assert `/usr/bin/nvidia-ctk` exists. That assertion is
